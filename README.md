@@ -1,4 +1,4 @@
-commaeleon
+Separaator
 ==========
 
 A Clojure library for parsing [Delimiter-Separated Value](https://en.wikipedia.org/wiki/Delimiter-separated_values)
