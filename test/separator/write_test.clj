@@ -1,7 +1,6 @@
 (ns separator.write-test
   (:require
-    [clojure.java.io :as io]
-    [clojure.test :refer [deftest testing is]]
+    [clojure.test :refer [deftest is]]
     [separator.io :as separator]))
 
 

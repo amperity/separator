@@ -2,12 +2,10 @@
   "Public interface to the separator codec."
   (:refer-clojure :exclude [read])
   (:require
-    [clojure.java.io :as io]
     [clojure.string :as str])
   (:import
     (java.io
       BufferedReader
-      EOFException
       File
       FileReader
       InputStream
