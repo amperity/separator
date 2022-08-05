@@ -1,4 +1,4 @@
-(ns separator.core
+(ns separator.io
   "Public interface to the Separator parsing and writing logic."
   (:refer-clojure :exclude [read])
   (:require
@@ -19,7 +19,7 @@
       Writer)
     (java.nio.charset
       StandardCharsets)
-    (separator.read
+    (separator.io
       ParseException
       Parser)))
 

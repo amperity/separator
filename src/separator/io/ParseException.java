@@ -1,4 +1,4 @@
-package separator.read;
+package separator.io;
 
 
 import java.util.List;
