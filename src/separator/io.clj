@@ -18,6 +18,7 @@
     (separator.io
       ParseException
       Parser
+      Parser$ErrorMode
       TrackingPushbackReader)))
 
 
@@ -30,7 +31,8 @@
    :escape nil
    :unescape? false
    :max-cell-size 16384
-   :max-row-width 2048})
+   :max-row-width 2048
+   :error-mode :include})
 
 
 ;; ## Reading
@@ -100,6 +102,11 @@
     Limit on number of characters in a single field.
   - `:max-row-width`
     Limit on number of cells in a single row.
+  - `:error-mode`
+    One of the following values:
+      - `:ignore` to ignore all parsing errors
+      - `:include` to include errors in the parsed sequence as values
+      - `:throw` to throw as errors are encountered
 
   See `default-options` for default values."
   [input & {:as opts}]
@@ -107,14 +114,18 @@
         opts (merge default-options opts)]
     (Parser.
       reader
-      (:max-cell-size opts)
-      (:max-row-width opts)
       (int (:separator opts))
       (int (:quote opts))
       (if-let [escape (:escape opts)]
         (int escape)
         -1)
-      (boolean (:unescape? opts)))))
+      (boolean (:unescape? opts))
+      (:max-cell-size opts)
+      (:max-row-width opts)
+      (case (:error-mode opts)
+        :ignore Parser$ErrorMode/IGNORE
+        :include Parser$ErrorMode/INCLUDE
+        :throw Parser$ErrorMode/THROW))))
 
 
 ;; ## Writing

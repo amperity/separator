@@ -20,6 +20,14 @@ import clojure.lang.Sequential;
  */
 public class Parser implements Iterable<Object>, IReduceInit, Sequential {
 
+    public enum Sentinel {
+        SEP, EOL, EOF
+    }
+
+    public enum ErrorMode {
+        IGNORE, INCLUDE, THROW
+    }
+
     // Constant characters
     private static final int lf = (int) '\n';
     private static final int cr = (int) '\r';
@@ -31,13 +39,10 @@ public class Parser implements Iterable<Object>, IReduceInit, Sequential {
     private final int separator;
     private final int quote;
     private final int escape;
+    private final boolean unescape;
     private final int maxCellSize;
     private final int maxRowWidth;
-    private final boolean unescape;
-
-    public enum Sentinel {
-        SEP, EOL, EOF
-    }
+    private final ErrorMode errorMode;
 
     // Internal state
     private Sentinel lastSeenSentinel;
@@ -48,14 +53,23 @@ public class Parser implements Iterable<Object>, IReduceInit, Sequential {
     /**
      * Construct a new parser instance.
      */
-    public Parser(TrackingPushbackReader reader, int maxCellSize, int maxRowWidth, int separator, int quote, int escape, boolean unescape) {
+    public Parser(
+            TrackingPushbackReader reader,
+            int separator,
+            int quote,
+            int escape,
+            boolean unescape,
+            int maxCellSize,
+            int maxRowWidth,
+            ErrorMode errorMode) {
         this.reader = reader;
-        this.maxCellSize = maxCellSize;
-        this.maxRowWidth = maxRowWidth;
         this.separator = separator;
         this.quote = quote;
         this.escape = escape;
         this.unescape = unescape;
+        this.maxCellSize = maxCellSize;
+        this.maxRowWidth = maxRowWidth;
+        this.errorMode = errorMode;
     }
 
 
@@ -300,6 +314,9 @@ public class Parser implements Iterable<Object>, IReduceInit, Sequential {
         try {
             while (true) {
                 String cell = parseCell();
+                if (lastSeenSentinel == Sentinel.EOF && row.isEmpty() && cell.equals("")) {
+                    return null;
+                }
                 row.add(cell);
                 if (lastSeenSentinel != Sentinel.SEP) {
                     return row;
@@ -332,25 +349,29 @@ public class Parser implements Iterable<Object>, IReduceInit, Sequential {
             } else if (done) {
                 return false;
             } else {
-                try {
-                    next = parseRow();
-                    if (lastSeenSentinel == Sentinel.EOF) {
-                        done = true;
-                        List<String> row = (List<String>) next;
-                        if (row.size() == 1 && row.get(0).equals("")) {
-                            next = null;
-                            return false;
+                while (true) {
+                    try {
+                        next = parseRow();
+                        if (lastSeenSentinel == Sentinel.EOF) {
+                            done = true;
                         }
+                        return next != null;
+                    } catch (ParseException e) {
+                        if (lastSeenSentinel == Sentinel.EOF) {
+                            done = true;
+                        }
+                        if (errorMode == ErrorMode.IGNORE) {
+                            next = null;
+                        } else if (errorMode == ErrorMode.INCLUDE) {
+                            next = e;
+                            return true;
+                        } else if (errorMode == ErrorMode.THROW) {
+                            throw e;
+                        }
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
                     }
-                } catch (ParseException e) {
-                    next = e;
-                    if (lastSeenSentinel == Sentinel.EOF) {
-                        done = true;
-                    }
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
                 }
-                return true;
             }
         }
 
