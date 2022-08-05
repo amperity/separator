@@ -1,5 +1,5 @@
 (ns separator.io
-  "Public interface to the Separator parsing and writing logic."
+  "Public interface to the separator codec."
   (:refer-clojure :exclude [read])
   (:require
     [clojure.java.io :as io]
@@ -24,7 +24,7 @@
 
 
 (def default-options
-  "Default parsing options."
+  "Default codec options."
   {:separator \,
    :quote \"
    :quote? :required
