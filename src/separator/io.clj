@@ -77,12 +77,29 @@
   (instance? ParseException x))
 
 
-(defn parse-row
-  "Try to read a single row from the parser. Returns a vector of cells on
-  success, `nil` if the end of the input has been reached, or throws a parse
-  error on failure."
-  [^Parser parser]
-  (.parseRow parser))
+(defn zip-records
+  "A transducer which will zip up rows of cell data into records. If `headers`
+  are provided, they will be used directly, otherwise this returns a stateful
+  transducer which will treat the first row as headers."
+  ([]
+   (zip-records nil))
+  ([headers]
+   (let [state (volatile! headers)]
+     (fn xf
+       [rf]
+       (fn zip
+         ([] (rf))
+         ([acc] (rf acc))
+         ([acc row]
+          (if-let [headers @state]
+            (if (parse-error? row)
+              (rf acc row)
+              (rf acc (zipmap headers row)))
+            (if (parse-error? row)
+              (throw row)
+              (do
+                (vreset! state row)
+                acc)))))))))
 
 
 (defn read
@@ -134,6 +151,17 @@
         :ignore Parser$ErrorMode/IGNORE
         :include Parser$ErrorMode/INCLUDE
         :throw Parser$ErrorMode/THROW))))
+
+
+(defn read-records
+  "Parse delimiter-separated row data from the input, as in `read`. This
+  function returns a wrapped parser which will convert all rows into record
+  maps by applying headers. If the headers are not provided, they will be read
+  from the first row of input."
+  [input & {:as opts}]
+  (eduction
+    (zip-records (:headers opts))
+    (read input opts)))
 
 
 ;; ## Writing
