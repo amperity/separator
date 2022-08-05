@@ -6,7 +6,6 @@ import java.util.List;
 import clojure.lang.ILookup;
 import clojure.lang.IPersistentVector;
 import clojure.lang.Keyword;
-import clojure.lang.LazilyPersistentVector;
 
 
 /**
@@ -69,11 +68,11 @@ public class ParseException extends RuntimeException implements ILookup {
     /**
      * Set the partialRow field, once.
      */
-    public void setPartialRow(List<String> row) {
+    public void setPartialRow(IPersistentVector row) {
         if (partialRow != null) {
             throw new IllegalStateException("The partialRow field is already set");
         }
-        this.partialRow = LazilyPersistentVector.create(row);
+        this.partialRow = row;
     }
 
 

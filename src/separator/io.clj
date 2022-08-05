@@ -77,16 +77,24 @@
   (instance? ParseException x))
 
 
-(defn read
-  "Parse delimiter-separated row data from the input. Returns an iterable and
-  reducible collection where each entry is either a vector of strings
-  representing the cells in a single row, or a parse error map with details
-  about the error encountered while parsing that row.
+(defn parse-row
+  "Try to read a single row from the parser. Returns a vector of cells on
+  success, `nil` if the end of the input has been reached, or throws a parse
+  error on failure."
+  [^Parser parser]
+  (.parseRow parser))
 
-  This accepts a variety of inputs, but ultimately constructs a `TrackingPushbackReader`
-  to read from. No data is read from the input until the value returned from
-  this is consumed. The result can only be consumed **once**, and will not
-  automatically close the input stream.
+
+(defn read
+  "Parse delimiter-separated row data from the input. Returns a parser, which
+  is an iterable and reducible collection where each entry is either a vector
+  of strings representing the cells in a single row, or a parse error with
+  details about the error encountered while parsing that row.
+
+  This accepts a variety of input types, including `File`, `InputStream`, and
+  `Reader` values. No data is read from the input until the parser is consumed.
+  The parser can only be consumed **once**, and will not automatically close
+  the input.
 
   Options may include:
 

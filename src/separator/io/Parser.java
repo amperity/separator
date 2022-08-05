@@ -10,6 +10,7 @@ import java.util.NoSuchElementException;
 
 import clojure.lang.IFn;
 import clojure.lang.IReduceInit;
+import clojure.lang.PersistentVector;
 import clojure.lang.Reduced;
 import clojure.lang.Sequential;
 
@@ -168,7 +169,7 @@ public class Parser implements Iterable<Object>, IReduceInit, Sequential {
      * throws a parse error.
      */
     private void checkCellLength(StringBuilder cell, int ch) throws IOException {
-        if (cell.length() > maxCellSize) {
+        if (maxCellSize < cell.length()) {
             if (ch != eof) {
                 reader.unread(ch);
             }
@@ -307,9 +308,11 @@ public class Parser implements Iterable<Object>, IReduceInit, Sequential {
 
 
     /**
-     * Parses the next row and returns it as a list of strings.
+     * Parses the next row and returns it as a vector of strings.
+     *
+     * @return a vector containing the parsed cells
      */
-    private List<String> parseRow() throws IOException {
+    public PersistentVector parseRow() throws IOException {
         ArrayList<String> row = new ArrayList<String>();
         try {
             while (true) {
@@ -319,9 +322,9 @@ public class Parser implements Iterable<Object>, IReduceInit, Sequential {
                 }
                 row.add(cell);
                 if (lastSeenSentinel != Sentinel.SEP) {
-                    return row;
+                    return PersistentVector.create(row);
                 }
-                if (row.size() >= maxRowWidth) {
+                if (maxRowWidth <= row.size()) {
                     throw parseError(
                         "row-size-exceeded",
                         String.format("Data row exceeded maximum cell count of %d while reading", maxRowWidth),
@@ -329,7 +332,7 @@ public class Parser implements Iterable<Object>, IReduceInit, Sequential {
                 }
             }
         } catch (ParseException e) {
-            e.setPartialRow(row);
+            e.setPartialRow(PersistentVector.create(row));
             throw e;
         }
     }
