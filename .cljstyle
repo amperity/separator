@@ -1,0 +1,3 @@
+;; vim: filetype=clojure
+{:files
+ {:ignore #{"target" ".git"}}}
