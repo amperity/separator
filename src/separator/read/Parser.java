@@ -49,7 +49,7 @@ public class Parser implements Iterable<Object>, IReduceInit, Sequential {
     /**
      * Construct a new parser instance.
      */
-    private Parser(LineNumberingPushbackReader reader, int maxCellSize, int maxRowWidth, int separator, int quote, int escape, boolean unescape) {
+    public Parser(LineNumberingPushbackReader reader, int maxCellSize, int maxRowWidth, int separator, int quote, int escape, boolean unescape) {
         this.reader = reader;
         this.maxCellSize = maxCellSize;
         this.maxRowWidth = maxRowWidth;
@@ -57,22 +57,6 @@ public class Parser implements Iterable<Object>, IReduceInit, Sequential {
         this.quote = quote;
         this.escape = escape;
         this.unescape = unescape;
-    }
-
-
-    // TODO use a map of options instead?
-    public static Parser parse(LineNumberingPushbackReader reader, int maxCellSize, int maxRowWidth, char separator, char quote) {
-        return new Parser(reader, maxCellSize, maxRowWidth, (int) separator, (int) quote, -1, false);
-    }
-
-
-    public static Parser parse(LineNumberingPushbackReader reader, int maxCellSize, int maxRowWidth, char separator, char quote, char escape) {
-        return new Parser(reader, maxCellSize, maxRowWidth, (int) separator, (int) quote, (int) escape, false);
-    }
-
-
-    public static Parser parse(LineNumberingPushbackReader reader, int maxCellSize, int maxRowWidth, char separator, char quote, char escape, boolean unescape) {
-        return new Parser(reader, maxCellSize, maxRowWidth, (int) separator, (int) quote, (int) escape, unescape);
     }
 
 
