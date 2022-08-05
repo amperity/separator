@@ -3,15 +3,18 @@ package separator.io;
 
 import java.util.List;
 
+import clojure.lang.IExceptionInfo;
 import clojure.lang.ILookup;
+import clojure.lang.IPersistentMap;
 import clojure.lang.IPersistentVector;
 import clojure.lang.Keyword;
+import clojure.lang.PersistentArrayMap;
 
 
 /**
  * A representation of an error encountered during parsing.
  */
-public class ParseException extends RuntimeException implements ILookup {
+public class ParseException extends RuntimeException implements ILookup, IExceptionInfo {
 
     /**
      * Type of error encountered.
@@ -122,6 +125,45 @@ public class ParseException extends RuntimeException implements ILookup {
             default:
                 return notFound;
         }
+    }
+
+
+    ///// IExceptionInfo /////
+
+    @Override
+    public IPersistentMap getData() {
+        int length = 8
+            + (partialCell != null ? 2 : 0)
+            + (partialRow != null ? 2 : 0)
+            + (skippedText != null ? 2 : 0);
+        Object[] elements = new Object[length];
+        int idx = 0;
+
+        elements[idx++] = Keyword.intern(null, "type");
+        elements[idx++] = type;
+        elements[idx++] = Keyword.intern(null, "message");
+        elements[idx++] = getMessage();
+        elements[idx++] = Keyword.intern(null, "line");
+        elements[idx++] = line;
+        elements[idx++] = Keyword.intern(null, "column");
+        elements[idx++] = column;
+
+        if (partialCell != null) {
+            elements[idx++] = Keyword.intern(null, "partial-cell");
+            elements[idx++] = partialCell;
+        }
+
+        if (partialRow != null) {
+            elements[idx++] = Keyword.intern(null, "partial-row");
+            elements[idx++] = partialRow;
+        }
+
+        if (skippedText != null) {
+            elements[idx++] = Keyword.intern(null, "skipped-text");
+            elements[idx++] = skippedText;
+        }
+
+        return PersistentArrayMap.createAsIfByAssoc(elements);
     }
 
 }
