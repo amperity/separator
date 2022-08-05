@@ -1,7 +1,7 @@
 Separator
 =========
 
-[![CircleCI](https://circleci.com/gh/amperity/separator.svg?style=shield&circle-token=FIXME)](https://circleci.com/gh/amperity/separator)
+[![CircleCI](https://circleci.com/gh/amperity/separator.svg?style=shield&circle-token=1b358576395c3758b3a88b5d265862ca91b0fa2b)](https://circleci.com/gh/amperity/separator)
 [![codecov](https://codecov.io/gh/amperity/separator/branch/main/graph/badge.svg)](https://codecov.io/gh/amperity/separator)
 [![cljdoc](https://cljdoc.org/badge/com.amperity/separator)](https://cljdoc.org/d/com.amperity/separator/CURRENT)
 
