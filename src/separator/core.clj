@@ -118,3 +118,95 @@
         (int escape)
         -1)
       (boolean (:unescape? opts)))))
+
+
+;; ## Writing
+
+(defn- should-quote?
+  "True if the value string should be quoted based on the separator"
+  [^String string separator quote-char quote?]
+  (case quote?
+    true
+    true
+
+    false
+    false
+
+    :required
+    (or (<= 0 (.indexOf string (int separator)))
+        (<= 0 (.indexOf string (int quote-char)))
+        ;; CR \r
+        (<= 0 (.indexOf string 0x0A))
+        ;; LF \n
+        (<= 0 (.indexOf string 0x0D)))
+
+    ;; else treat quote? as a predicate
+    (quote? string)))
+
+
+(defn- write-cell
+  "Write a single cell to the output writer."
+  [^Writer writer value separator quote-char quote?]
+  (when (some? value)
+    (let [string (str value)]
+      (if (should-quote? string separator quote-char quote?)
+        (doto writer
+          (.write (int quote-char))
+          (.write (str/escape string {quote-char (str quote-char quote-char)}))
+          (.write (int quote-char)))
+        (.write writer string)))))
+
+
+(defn- write-row
+  "Write a full row to the output writer."
+  [^Writer writer row separator quote-char quote?]
+  (let [started (volatile! false)]
+    (reduce
+      (fn rf
+        [_ cell]
+        (if @started
+          (.write writer (int separator))
+          (vreset! started true))
+        (write-cell writer cell separator quote-char quote?))
+      nil
+      row)))
+
+
+(defn write
+  "Write data to the output `Writer` as separator-delimited text. The `rows`
+  should be a reducible collection of sequential cell values. Returns the
+  number of rows written.
+
+   Options may include:
+
+   - `:separator`
+     Character to separate cells with.
+   - `:quote`
+     Character to quote cell values with.
+   - `:quote?`
+     Predicate which should return true for cells to quote. Can be `true` to
+     always quote cells, `false` to never quote, and defaults to quoting only
+     when necessary.
+   - `:newline`
+     Keyword option for newlines, either `:lf` for a single `\\n` or `:crlf`
+     for Windows-style `\\r\\n`.
+
+  See `default-options` for default values."
+  [^Writer output rows & {:as opts}]
+  (let [opts (merge default-options opts)
+        separator (:separator opts)
+        quote-char (:quote opts)
+        quote? (:quote? opts)
+        row-sep (case (:newline opts)
+                  :lf "\n"
+                  :crlf "\r\n")
+        row-count (reduce
+                    (fn write*
+                      [n row]
+                      (write-row output row separator quote-char quote?)
+                      (.write output row-sep)
+                      (inc n))
+                    0
+                    rows)]
+    (.flush output)
+    row-count))
