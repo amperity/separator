@@ -10,7 +10,6 @@ import java.util.NoSuchElementException;
 
 import clojure.lang.IFn;
 import clojure.lang.IReduceInit;
-import clojure.lang.LineNumberingPushbackReader;
 import clojure.lang.Reduced;
 import clojure.lang.Sequential;
 
@@ -28,7 +27,7 @@ public class Parser implements Iterable<Object>, IReduceInit, Sequential {
     private static final int eof = -1;
 
     // Parser configuration
-    private final LineNumberingPushbackReader reader;
+    private final TrackingPushbackReader reader;
     private final int separator;
     private final int quote;
     private final int escape;
@@ -49,7 +48,7 @@ public class Parser implements Iterable<Object>, IReduceInit, Sequential {
     /**
      * Construct a new parser instance.
      */
-    public Parser(LineNumberingPushbackReader reader, int maxCellSize, int maxRowWidth, int separator, int quote, int escape, boolean unescape) {
+    public Parser(TrackingPushbackReader reader, int maxCellSize, int maxRowWidth, int separator, int quote, int escape, boolean unescape) {
         this.reader = reader;
         this.maxCellSize = maxCellSize;
         this.maxRowWidth = maxRowWidth;

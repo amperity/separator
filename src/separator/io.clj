@@ -5,8 +5,6 @@
     [clojure.java.io :as io]
     [clojure.string :as str])
   (:import
-    (clojure.lang
-      LineNumberingPushbackReader)
     (java.io
       BufferedReader
       EOFException
@@ -21,7 +19,8 @@
       StandardCharsets)
     (separator.io
       ParseException
-      Parser)))
+      Parser
+      TrackingPushbackReader)))
 
 
 (def default-options
@@ -39,23 +38,23 @@
 ;; ## Reading
 
 (defn- input-reader
-  "Convert the given source of input data to a `PushbackReader` that can be fed
-  to the parser."
-  ^LineNumberingPushbackReader
+  "Convert the given source of input data to a `TrackingPushbackReader` that
+  can be fed to the parser."
+  ^TrackingPushbackReader
   [input]
   (cond
-    (instance? LineNumberingPushbackReader input)
+    (instance? TrackingPushbackReader input)
     input
 
     (or (instance? BufferedReader input)
         (instance? StringReader input))
-    (LineNumberingPushbackReader. input)
+    (TrackingPushbackReader. input)
 
     (instance? Reader input)
     (recur (BufferedReader. input))
 
     (instance? InputStream input)
-    (recur (InputStreamReader. input StandardCharsets/UTF_8))
+    (recur (InputStreamReader. ^InputStream input StandardCharsets/UTF_8))
 
     (instance? File input)
     (recur (FileReader. ^File input StandardCharsets/UTF_8))
@@ -84,10 +83,10 @@
   representing the cells in a single row, or a parse error map with details
   about the error encountered while parsing that row.
 
-  This accepts a variety of inputs, but ultimately constructs a
-  `LineNumberingPushbackReader` to read from. No data is read from the input
-  until the value returned from this is consumed. The result can only be
-  consumed **once**, and will not automatically close the input stream.
+  This accepts a variety of inputs, but ultimately constructs a `TrackingPushbackReader`
+  to read from. No data is read from the input until the value returned from
+  this is consumed. The result can only be consumed **once**, and will not
+  automatically close the input stream.
 
   Options may include:
 
@@ -112,8 +111,8 @@
       reader
       (:max-cell-size opts)
       (:max-row-width opts)
-      (:separator opts)
-      (:quote opts)
+      (int (:separator opts))
+      (int (:quote opts))
       (if-let [escape (:escape opts)]
         (int escape)
         -1)
