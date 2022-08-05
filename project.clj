@@ -7,6 +7,8 @@
   :dependencies
   [[org.clojure/clojure "1.11.1"]]
 
+  :java-source-paths ["src"]
+
   :profiles
   {:repl
    {:source-paths ["dev"]
