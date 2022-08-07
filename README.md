@@ -103,8 +103,8 @@ data to and a similar set of options to control the output format:
 
 ;; cells containing the quote or separator character are automatically quoted
 => (separator/write *out* [["A" "B,B" "C"] ["D" "E" "F\"F"]])
-A,"B,B",C
-D,E,"F""F"
+;; A,"B,B",C
+;; D,E,"F""F"
 2
 
 ;; you can also force quoting for all cells

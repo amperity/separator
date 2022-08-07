@@ -16,7 +16,10 @@
   {:repl
    {:source-paths ["dev"]
     :repl-options {:init-ns separator.repl}
-    :jvm-opts ["-XX:-OmitStackTraceInFastThrow"]
+    :jvm-opts ["-XX:-OmitStackTraceInFastThrow"
+               "-XX:+UnlockDiagnosticVMOptions"
+               "-XX:+DebugNonSafepoints"
+               "-Djdk.attach.allowAttachSelf"]
     :dependencies
     [[org.clojure/tools.namespace "1.3.0"]
      [com.clojure-goes-fast/clj-async-profiler "1.0.0"]
