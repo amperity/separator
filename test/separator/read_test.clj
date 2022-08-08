@@ -1,12 +1,124 @@
 (ns separator.read-test
   (:require
+    [clojure.java.io :as io]
+    [clojure.string :as str]
     [clojure.test :refer [deftest testing is]]
-    [separator.io :as separator]))
+    [separator.io :as separator])
+  (:import
+    (java.io
+      BufferedReader
+      ByteArrayInputStream
+      File
+      StringReader)
+    (separator.io
+      ParseException
+      TrackingPushbackReader)))
 
 
 (defn read-csv
   [input & {:as opts}]
   (seq (separator/read input opts)))
+
+
+(deftest input-types
+  (testing "bad input"
+    (is (thrown? IllegalArgumentException
+          (#'separator/input-reader nil)))
+    (is (thrown? IllegalArgumentException
+          (#'separator/input-reader (Object.)))))
+  (testing "string"
+    (let [reader (#'separator/input-reader "hello")]
+      (is (instance? TrackingPushbackReader reader))
+      (is (= "hello" (slurp reader)))))
+  (testing "file"
+    (let [file (io/file "test/separator/sample/abc.csv")
+          reader (#'separator/input-reader file)]
+      (is (instance? TrackingPushbackReader reader))
+      (is (str/starts-with? (slurp reader) "A,B,C"))))
+  (testing "input-stream"
+    (let [content (.getBytes "raw data")
+          input (ByteArrayInputStream. content)
+          reader (#'separator/input-reader input)]
+      (is (instance? TrackingPushbackReader reader))
+      (is (= "raw data" (slurp reader)))))
+  (testing "reader"
+    (let [reader (#'separator/input-reader "hey")]
+      (is (instance? TrackingPushbackReader reader))
+      (is (identical? reader (#'separator/input-reader reader))))))
+
+
+(deftest error-predicate
+  (is (not (separator/parse-error? nil)))
+  (is (not (separator/parse-error? {:type :bad})))
+  (is (separator/parse-error?
+        (ParseException. "bad" "a thing was wrong" 42 8 nil nil))))
+
+
+(deftest record-zipping
+  (testing "with no arguments"
+    (testing "and empty input"
+      (is (= []
+             (into []
+                   (separator/zip-records)
+                   []))
+          "should be empty"))
+    (testing "and header-only input"
+      (is (= []
+             (into []
+                   (separator/zip-records)
+                   [["name" "age" "role"]]))
+          "should be empty"))
+    (testing "and many rows"
+      (is (= [{"name" "Fry", "age" 26, "role" "Delivery Boy"}
+              {"name" "Leela", "age" 30, "role" "Ship Captain"}
+              {"name" "Hubert", "age" 160, "role" "Professor"}]
+             (into []
+                   (separator/zip-records)
+                   [["name" "age" "role"]
+                    ["Fry" 26 "Delivery Boy"]
+                    ["Leela" 30 "Ship Captain"]
+                    ["Hubert" 160 "Professor"]]))
+          "should contain records")))
+  (testing "with explicit headers"
+    (testing "and empty input"
+      (is (= []
+             (into []
+                   (separator/zip-records ["name" "age" "role"])
+                   []))
+          "should be empty"))
+    (testing "and many rows"
+      (is (= [{"name" "Fry", "age" 26, "role" "Delivery Boy"}
+              {"name" "Leela", "age" 30, "role" "Ship Captain"}
+              {"name" "Hubert", "age" 160, "role" "Professor"}]
+             (into []
+                   (separator/zip-records ["name" "age" "role"])
+                   [["Fry" 26 "Delivery Boy"]
+                    ["Leela" 30 "Ship Captain"]
+                    ["Hubert" 160 "Professor"]]))
+          "should contain records")))
+  (testing "with errors"
+    (testing "in header"
+      (is (thrown? ParseException
+            (into []
+                  (separator/zip-records)
+                  [(ParseException. "bad" "a thing was wrong" 42 8 nil nil)
+                   ["name" "age" "role"]
+                   ["Fry" 26 "Delivery Boy"]
+                   ["Leela" 30 "Ship Captain"]
+                   ["Hubert" 160 "Professor"]]))
+          "should throw"))
+    (testing "in data"
+      (let [ex (ParseException. "bad" "a thing was wrong" 42 8 nil nil)]
+        (is (= [{"name" "Fry", "age" 26, "role" "Delivery Boy"}
+                ex
+                {"name" "Hubert", "age" 160, "role" "Professor"}]
+               (into []
+                     (separator/zip-records)
+                     [["name" "age" "role"]
+                      ["Fry" 26 "Delivery Boy"]
+                      ex
+                      ["Hubert" 160 "Professor"]]))
+            "should pass through error")))))
 
 
 (deftest empty-inputs

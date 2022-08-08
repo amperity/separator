@@ -135,10 +135,9 @@
 
   See `default-options` for default values."
   [input & {:as opts}]
-  (let [reader (input-reader input)
-        opts (merge default-options opts)]
+  (let [opts (merge default-options opts)]
     (Parser.
-      reader
+      (input-reader input)
       (int (:separator opts))
       (int (:quote opts))
       (if-let [escape (:escape opts)]
