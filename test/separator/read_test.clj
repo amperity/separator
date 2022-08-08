@@ -17,7 +17,7 @@
 
 (defn read-csv
   [input & {:as opts}]
-  (seq (separator/read input opts)))
+  (seq (separator/read-rows input opts)))
 
 
 (deftest input-types

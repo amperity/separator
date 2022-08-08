@@ -7,7 +7,7 @@
 (defn write-str
   [rows & {:as opts}]
   (with-out-str
-    (separator/write *out* rows opts)))
+    (separator/write-rows *out* rows opts)))
 
 
 (deftest csv-generation

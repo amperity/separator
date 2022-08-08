@@ -1,6 +1,5 @@
 (ns separator.io
   "Public interface to the separator codec."
-  (:refer-clojure :exclude [read])
   (:require
     [clojure.string :as str])
   (:import
@@ -102,7 +101,7 @@
                 acc)))))))))
 
 
-(defn read
+(defn read-rows
   "Parse delimiter-separated row data from the input. Returns a parser, which
   is an iterable and reducible collection where each entry is either a vector
   of strings representing the cells in a single row, or a parse error with
@@ -160,7 +159,7 @@
   [input & {:as opts}]
   (eduction
     (zip-records (:headers opts))
-    (read input opts)))
+    (read-rows input opts)))
 
 
 ;; ## Writing
@@ -215,7 +214,7 @@
       row)))
 
 
-(defn write
+(defn write-rows
   "Write data to the output `Writer` as separator-delimited text. The `rows`
   should be a reducible collection of sequential cell values. Returns the
   number of rows written.

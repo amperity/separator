@@ -31,27 +31,27 @@ deal with bad input data. The parser does its best to recover from these errors
 and present meaningful data about the problems to the consumer. This includes
 limiting the maximum cell size and the maximum row width.
 
-To parse data into a sequence of rows, use the `read` function. This accepts
-many kinds of inputs, including directly reading string data:
+To parse data into a sequence of rows, use the `read-rows` function. This
+accepts many kinds of inputs, including directly reading string data:
 
 ```clojure
-=> (vec (separator/read "A,B,C\nD,E,F\nG,H,I\n"))
+=> (vec (separator/read-rows "A,B,C\nD,E,F\nG,H,I\n"))
 [["A" "B" "C"] ["D" "E" "F"] ["G" "H" "I"]]
 
 ;; quoted cells can embed newlines
-=> (vec (separator/read "A,B,C\nD,E,\"F\nG\",H,I\n"))
+=> (vec (separator/read-rows "A,B,C\nD,E,\"F\nG\",H,I\n"))
 [["A" "B" "C"] ["D" "E" "F\nG" "H" "I"]]
 
 ;; parse errors are included in the sequence by default
-=> (vec (separator/read "A,B,C\nD,\"\"E,F\nG,H,I\n"))
+=> (vec (separator/read-rows "A,B,C\nD,\"\"E,F\nG,H,I\n"))
 [["A" "B" "C"] #<separator.io.ParseException@34b69fbe :malformed-quote 2:4> ["G" "H" "I"]]
 
 ;; the error mode can also omit them
-=> (vec (separator/read "A,B,C\nD,\"\"E,F\nG,H,I\n" :error-mode :ignore))
+=> (vec (separator/read-rows "A,B,C\nD,\"\"E,F\nG,H,I\n" :error-mode :ignore))
 [["A" "B" "C"] ["G" "H" "I"]]
 
 ;; ...or throw them
-=> (vec (separator/read "A,B,C\nD,\"\"E,F\nG,H,I\n" :error-mode :throw))
+=> (vec (separator/read-rows "A,B,C\nD,\"\"E,F\nG,H,I\n" :error-mode :throw))
 ;; Execution error (ParseException) at separator.io.Parser/parseError (Parser.java:87).
 ;; Unexpected character following quote: E
 
@@ -71,10 +71,10 @@ Escapes are not part of the CSV standard but show up often in practice, so we
 need to deal with them.
 
 ```clojure
-=> (vec (separator/read "A|B|C\nD|E|^F\nG^|H|I\n" :separator \| :quote \^))
+=> (vec (separator/read-rows "A|B|C\nD|E|^F\nG^|H|I\n" :separator \| :quote \^))
 [["A" "B" "C"] ["D" "E" "F\nG" "H" "I"]]
 
-=> (vec (separator/read "A,B,C\\\nD,E,F\nG,H,I\n" :escape \\))
+=> (vec (separator/read-rows "A,B,C\\\nD,E,F\nG,H,I\n" :escape \\))
 [["A" "B" "C\\nD" "E" "F"] ["G" "H" "I"]]
 ```
 
@@ -91,31 +91,31 @@ to read a sequence of map records instead, by utilizing a row of headers:
 ### Writing
 
 The library also provides tools for writing delimiter-separated data from a
-sequence of rows using the `write` function. This takes a `Writer` to print the
+sequence of rows using the `write-rows` function. This takes a `Writer` to print the
 data to and a similar set of options to control the output format:
 
 ```clojure
-=> (separator/write *out* [["A" "B" "C"] ["D" "E" "F"] ["G" "H" "I"]])
+=> (separator/write-rows *out* [["A" "B" "C"] ["D" "E" "F"] ["G" "H" "I"]])
 ;; A,B,C
 ;; D,E,F
 ;; G,H,I
 3
 
 ;; cells containing the quote or separator character are automatically quoted
-=> (separator/write *out* [["A" "B,B" "C"] ["D" "E" "F\"F"]])
+=> (separator/write-rows *out* [["A" "B,B" "C"] ["D" "E" "F\"F"]])
 ;; A,"B,B",C
 ;; D,E,"F""F"
 2
 
 ;; you can also force quoting for all cells
-=> (separator/write *out* [["A" "B" "C"] ["D" "E" "F"] ["G" "H" "I"]] :quote? true)
+=> (separator/write-rows *out* [["A" "B" "C"] ["D" "E" "F"] ["G" "H" "I"]] :quote? true)
 ;; "A","B","C"
 ;; "D","E","F"
 ;; "G","H","I"
 3
 
 ;; or provide a predicate to control quoting
-=> (separator/write *out* [["A" "B" "C"] ["D" "E" "F"] ["G" "H" "I"]] :quote? #{"E"})
+=> (separator/write-rows *out* [["A" "B" "C"] ["D" "E" "F"] ["G" "H" "I"]] :quote? #{"E"})
 ;; A,B,C
 ;; D,"E",F
 ;; G,H,I

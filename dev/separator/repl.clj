@@ -24,9 +24,9 @@
   ([file n]
    (cap/profile
      (dotimes [i n]
-       (consume! (separator/read file))))))
+       (consume! (separator/read-rows file))))))
 
 
 (comment
   (crit/quick-bench
-    (consume! (separator/read genome-scores-file))))
+    (consume! (separator/read-rows genome-scores-file))))
