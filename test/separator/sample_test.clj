@@ -1,11 +1,8 @@
 (ns separator.sample-test
   (:require
-    [clojure.edn :as edn]
     [clojure.java.io :as io]
     [clojure.test :refer [deftest testing is]]
-    [separator.io :as separator])
-  (:import
-    java.io.File))
+    [separator.io :as separator]))
 
 
 (def sample-dir

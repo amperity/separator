@@ -6,10 +6,7 @@
     [separator.io :as separator])
   (:import
     (java.io
-      BufferedReader
-      ByteArrayInputStream
-      File
-      StringReader)
+      ByteArrayInputStream)
     (separator.io
       ParseException
       TrackingPushbackReader)))
