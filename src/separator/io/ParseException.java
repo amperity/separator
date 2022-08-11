@@ -82,6 +82,21 @@ public class ParseException extends RuntimeException implements ILookup, IExcept
     ///// Object /////
 
     @Override
+    public boolean equals(Object x) {
+        if (this == x) return true;
+        if (!(x instanceof ParseException)) return false;
+        ParseException e = (ParseException)x;
+        return getData().equals(e.getData());
+    }
+
+
+    @Override
+    public int hashCode() {
+        return (31 * getClass().hashCode()) + getData().hashCode();
+    }
+
+
+    @Override
     public String toString() {
         return String.format("%s %d:%d", type.toString(), line, column);
     }
