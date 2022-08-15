@@ -76,12 +76,12 @@
   (instance? ParseException x))
 
 
-(defn zip-records
+(defn zip-headers
   "A transducer which will zip up rows of cell data into records. If `headers`
   are provided, they will be used directly, otherwise this returns a stateful
   transducer which will treat the first row as headers."
   ([]
-   (zip-records nil))
+   (zip-headers nil))
   ([headers]
    (let [state (volatile! headers)]
      (fn xf
@@ -152,13 +152,18 @@
 
 
 (defn read-records
-  "Parse delimiter-separated row data from the input, as in `read`. This
+  "Parse delimiter-separated row data from the input, as in `read-rows`. This
   function returns a wrapped parser which will convert all rows into record
-  maps by applying headers. If the headers are not provided, they will be read
-  from the first row of input."
+  maps by applying headers.
+
+  Options are as for `read-rows`, with the addition of:
+
+  - `:headers`
+    A known sequence of header values to use for the row data. If not provided,
+    they will be read from the first row of input."
   [input & {:as opts}]
   (eduction
-    (zip-records (:headers opts))
+    (zip-headers (:headers opts))
     (read-rows input opts)))
 
 

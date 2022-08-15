@@ -56,13 +56,13 @@
     (testing "and empty input"
       (is (= []
              (into []
-                   (separator/zip-records)
+                   (separator/zip-headers)
                    []))
           "should be empty"))
     (testing "and header-only input"
       (is (= []
              (into []
-                   (separator/zip-records)
+                   (separator/zip-headers)
                    [["name" "age" "role"]]))
           "should be empty"))
     (testing "and many rows"
@@ -70,7 +70,7 @@
               {"name" "Leela", "age" 30, "role" "Ship Captain"}
               {"name" "Hubert", "age" 160, "role" "Professor"}]
              (into []
-                   (separator/zip-records)
+                   (separator/zip-headers)
                    [["name" "age" "role"]
                     ["Fry" 26 "Delivery Boy"]
                     ["Leela" 30 "Ship Captain"]
@@ -80,7 +80,7 @@
     (testing "and empty input"
       (is (= []
              (into []
-                   (separator/zip-records ["name" "age" "role"])
+                   (separator/zip-headers ["name" "age" "role"])
                    []))
           "should be empty"))
     (testing "and many rows"
@@ -88,7 +88,7 @@
               {"name" "Leela", "age" 30, "role" "Ship Captain"}
               {"name" "Hubert", "age" 160, "role" "Professor"}]
              (into []
-                   (separator/zip-records ["name" "age" "role"])
+                   (separator/zip-headers ["name" "age" "role"])
                    [["Fry" 26 "Delivery Boy"]
                     ["Leela" 30 "Ship Captain"]
                     ["Hubert" 160 "Professor"]]))
@@ -97,7 +97,7 @@
     (testing "in header"
       (is (thrown? ParseException
             (into []
-                  (separator/zip-records)
+                  (separator/zip-headers)
                   [(ParseException. "bad" "a thing was wrong" 42 8 nil nil)
                    ["name" "age" "role"]
                    ["Fry" 26 "Delivery Boy"]
@@ -110,7 +110,7 @@
                 ex
                 {"name" "Hubert", "age" 160, "role" "Professor"}]
                (into []
-                     (separator/zip-records)
+                     (separator/zip-headers)
                      [["name" "age" "role"]
                       ["Fry" 26 "Delivery Boy"]
                       ex

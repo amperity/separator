@@ -78,7 +78,7 @@ need to deal with them.
 [["A" "B" "C\\nD" "E" "F"] ["G" "H" "I"]]
 ```
 
-Additionally, there's a convenience wrapper using the `zip-records` transducer
+Additionally, there's a convenience wrapper using the `zip-headers` transducer
 to read a sequence of map records instead, by utilizing a row of headers:
 
 ```clojure
