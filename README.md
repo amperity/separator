@@ -123,6 +123,62 @@ data to and a similar set of options to control the output format:
 ```
 
 
+## Performance
+
+Separator prioritizes defensiveness over speed, but aims to be as performant as
+possible within those constraints. For comparison, it's faster than `data.csv`
+but significantly slower than Jackson:
+
+```
+=> (crit/quick-bench (consume! (separator/read-rows genome-scores-file)))
+Evaluation count : 6 in 6 samples of 1 calls.
+             Execution time mean : 7.403406 sec
+    Execution time std-deviation : 88.779175 ms
+   Execution time lower quantile : 7.308871 sec ( 2.5%)
+   Execution time upper quantile : 7.548628 sec (97.5%)
+                   Overhead used : 6.943926 ns
+
+=> (crit/quick-bench (consume! (data-csv-read genome-scores-file)))
+Evaluation count : 6 in 6 samples of 1 calls.
+             Execution time mean : 10.253641 sec
+    Execution time std-deviation : 121.221011 ms
+   Execution time lower quantile : 10.146078 sec ( 2.5%)
+   Execution time upper quantile : 10.436205 sec (97.5%)
+                   Overhead used : 6.943926 ns
+
+=> (crit/quick-bench (consume! (jackson-read genome-scores-file)))
+Evaluation count : 6 in 6 samples of 1 calls.
+             Execution time mean : 1.944512 sec
+    Execution time std-deviation : 39.347074 ms
+   Execution time lower quantile : 1.906403 sec ( 2.5%)
+   Execution time upper quantile : 2.002788 sec (97.5%)
+                   Overhead used : 6.943926 ns
+```
+
+The test above was performed on a 2021 MacBook Pro with `data.csv` version
+1.0.1 and `jackson-dataformat-csv` version 2.13.0 on a 330 MB CSV file with
+12.4 million rows.
+
+Of course, all the speed in the world won't save you from a misplaced quote:
+
+```
+=> (spit "target/simple-err.csv" "A,B,C\nD,\"\"E,F\nG,H,I\n")
+nil
+
+=> (consume! (separator/read-rows (io/file "target/simple-err.csv")))
+3
+
+=> (consume! (data-csv-read (io/file "target/simple-err.csv")))
+Execution error at clojure.data.csv/read-quoted-cell (csv.clj:37).
+CSV error (unexpected character: E)
+
+=> (consume! (jackson-read (io/file "target/simple-err.csv")))
+Execution error (JsonParseException) at com.fasterxml.jackson.core.JsonParser/_constructError (JsonParser.java:2337).
+Unexpected character ('E' (code 69)): Expected column separator character (',' (code 44)) or end-of-line
+ at [Source: (com.fasterxml.jackson.dataformat.csv.impl.UTF8Reader); line: 2, column: 6]
+```
+
+
 ## License
 
 Copyright © 2022 Amperity, Inc.

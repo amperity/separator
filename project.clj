@@ -22,5 +22,7 @@
                "-Djdk.attach.allowAttachSelf"]
     :dependencies
     [[org.clojure/tools.namespace "1.3.0"]
+     [org.clojure/data.csv "1.0.1"]
      [com.clojure-goes-fast/clj-async-profiler "1.0.0"]
+     [com.fasterxml.jackson.dataformat/jackson-dataformat-csv "2.12.2"]
      [criterium "0.4.6"]]}})
