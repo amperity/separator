@@ -234,3 +234,59 @@
     (is (= :row-size-exceeded (:type err)))
     (is (= ["jkl" "mno" "pqr"] (:partial-row err)))
     (is (= "s" (:skipped-text err)))))
+
+
+(deftest parse-error-modes
+  (let [input "abc,def,ghi\njkl,\"\"mno,pqr\nstu,vwx,yz\n"]
+    (testing "bad"
+      (is (thrown? IllegalArgumentException
+            (vec (read-csv input :error-mode :foo)))))
+    (testing "ignore"
+      (is (= [["abc" "def" "ghi"]
+              ["stu" "vwx" "yz"]]
+             (read-csv input :error-mode :ignore))
+          "should omit errors from parse sequence"))
+    (testing "include"
+      (let [[row1 err row2] (read-csv input :error-mode :include)]
+        (is (= ["abc" "def" "ghi"] row1))
+        (is (= ["stu" "vwx" "yz"] row2))
+        (is (separator/parse-error? err))
+        (is (= {:type :malformed-quote,
+                :message "Unexpected character following quote: m"
+                :line 2
+                :column 6
+                :partial-cell ""
+                :partial-row ["jkl"]
+                :skipped-text "m...r"}
+               (ex-data err)))))
+    (testing "throw"
+      (let [err (try
+                  (vec (read-csv input :error-mode :throw))
+                  :fail
+                  (catch ParseException ex
+                    ex))]
+        (is (separator/parse-error? err))
+        (is (= {:type :malformed-quote,
+                :message "Unexpected character following quote: m"
+                :line 2
+                :column 6
+                :partial-cell ""
+                :partial-row ["jkl"]
+                :skipped-text "m...r"}
+               (ex-data err)))))))
+
+
+(deftest record-reading
+  (testing "with inline headers"
+    (is (= [{"name" "Fry", "age" "26", "role" "Delivery Boy"}
+            {"name" "Leela", "age" "30", "role" "Ship Captain"}
+            {"name" "Hubert", "age" "160", "role" "Professor"}]
+           (vec (separator/read-records
+                  "name,age,role\nFry,26,Delivery Boy\nLeela,30,Ship Captain\nHubert,160,Professor\n")))))
+  (testing "with provided headers"
+    (is (= [{"name" "Fry", "age" "26", "role" "Delivery Boy"}
+            {"name" "Leela", "age" "30", "role" "Ship Captain"}
+            {"name" "Hubert", "age" "160", "role" "Professor"}]
+           (vec (separator/read-records
+                  "Fry,26,Delivery Boy\nLeela,30,Ship Captain\nHubert,160,Professor\n"
+                  :headers ["name" "age" "role"]))))))

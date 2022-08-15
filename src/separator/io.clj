@@ -70,6 +70,18 @@
                   (.getName (class input)))))))
 
 
+(defn- parser-error-mode
+  "Convert a keyword to an `ErrorMode` enum value."
+  ^Parser$ErrorMode
+  [k]
+  (case k
+    :ignore Parser$ErrorMode/IGNORE
+    :include Parser$ErrorMode/INCLUDE
+    :throw Parser$ErrorMode/THROW
+    (throw (IllegalArgumentException.
+             (str "Unknown error mode setting: " (pr-str k))))))
+
+
 (defn parse-error?
   "True if the given value is a parser error."
   [x]
@@ -145,10 +157,7 @@
       (boolean (:unescape? opts))
       (:max-cell-size opts)
       (:max-row-width opts)
-      (case (:error-mode opts)
-        :ignore Parser$ErrorMode/IGNORE
-        :include Parser$ErrorMode/INCLUDE
-        :throw Parser$ErrorMode/THROW))))
+      (parser-error-mode (:error-mode opts)))))
 
 
 (defn read-records
@@ -169,15 +178,25 @@
 
 ;; ## Writing
 
+(defn- row-separator
+  "Convert a keyword to row separator string."
+  [k]
+  (case k
+    :lf "\n"
+    :crlf "\r\n"
+    (throw (IllegalArgumentException.
+             (str "Unknown row separator setting: " (pr-str k))))))
+
+
 (defn- should-quote?
   "True if the value string should be quoted based on the separator"
   [^String string separator quote-char quote?]
   (case quote?
-    true
-    true
+    false
+    false
 
-    false
-    false
+    true
+    true
 
     :required
     (or (<= 0 (.indexOf string (int separator)))
@@ -244,9 +263,7 @@
         separator (:separator opts)
         quote-char (:quote opts)
         quote? (:quote? opts)
-        row-sep (case (:newline opts)
-                  :lf "\n"
-                  :crlf "\r\n")
+        row-sep (row-separator (:newline opts))
         row-count (reduce
                     (fn write*
                       [n row]
