@@ -29,12 +29,6 @@ public class Parser implements Iterable<Object>, IReduceInit, Sequential {
         IGNORE, INCLUDE, THROW
     }
 
-    // Constant characters
-    private static final int lf = (int) '\n';
-    private static final int cr = (int) '\r';
-    private static final int tab = (int) '\t';
-    private static final int eof = -1;
-
     // Parser configuration
     private final TrackingPushbackReader reader;
     private final int separator;
@@ -94,7 +88,7 @@ public class Parser implements Iterable<Object>, IReduceInit, Sequential {
      */
     private void consumeCrlf() throws IOException {
         int nextCh = reader.read();
-        if (nextCh != lf && nextCh != eof) {
+        if (nextCh != '\n' && nextCh != -1) {
             reader.unread(nextCh);
         }
     }
@@ -111,14 +105,14 @@ public class Parser implements Iterable<Object>, IReduceInit, Sequential {
         if (ch == separator) {
             lastSeenSentinel = Sentinel.SEP;
             return true;
-        } else if (ch == lf) {
+        } else if (ch == '\n') {
             lastSeenSentinel = Sentinel.EOL;
             return true;
-        } else if (ch == cr) {
+        } else if (ch == '\r') {
             consumeCrlf();
             lastSeenSentinel = Sentinel.EOL;
             return true;
-        } else if (ch == eof) {
+        } else if (ch == -1) {
             lastSeenSentinel = Sentinel.EOF;
             return true;
         } else {
@@ -136,13 +130,13 @@ public class Parser implements Iterable<Object>, IReduceInit, Sequential {
         int lastCh = -1;
         while (true) {
             int ch = reader.read();
-            if (ch == eof) {
+            if (ch == -1) {
                 lastSeenSentinel = Sentinel.EOF;
                 break;
-            } else if (ch == lf) {
+            } else if (ch == '\n') {
                 lastSeenSentinel = Sentinel.EOL;
                 break;
-            } else if (ch == cr) {
+            } else if (ch == '\r') {
                 // parse the LF right after, if any
                 consumeCrlf();
                 lastSeenSentinel = Sentinel.EOL;
@@ -170,7 +164,7 @@ public class Parser implements Iterable<Object>, IReduceInit, Sequential {
      */
     private void checkCellLength(StringBuilder cell, int ch) throws IOException {
         if (maxCellSize < cell.length()) {
-            if (ch != eof) {
+            if (ch != -1) {
                 reader.unread(ch);
             }
             throw parseError(
@@ -187,7 +181,7 @@ public class Parser implements Iterable<Object>, IReduceInit, Sequential {
      */
     private String readEscape() throws IOException {
         int nextCh = reader.read();
-        if (this.unescape) {
+        if (unescape) {
             switch (nextCh) {
                 case 'b':
                     return "\b";
@@ -208,13 +202,13 @@ public class Parser implements Iterable<Object>, IReduceInit, Sequential {
             }
         } else {
             switch (nextCh) {
-                case tab:
+                case '\t':
                     return String.format("%ct", (char) escape);
-                case cr:
+                case '\r':
                     consumeCrlf();
-                case lf:
+                case '\n':
                     return String.format("%cn", (char) escape);
-                case eof:
+                case -1:
                     return "";
                 default:
                     return String.format("%c%c", (char) escape, (char) nextCh);
@@ -277,7 +271,7 @@ public class Parser implements Iterable<Object>, IReduceInit, Sequential {
                         String.format("Unexpected character following quote: %c", nextCh),
                         cell, true);
                 }
-            } else if (ch == eof) {
+            } else if (ch == -1) {
                 lastSeenSentinel = Sentinel.EOF;
                 throw parseError(
                     "malformed-quote",
@@ -295,7 +289,7 @@ public class Parser implements Iterable<Object>, IReduceInit, Sequential {
      */
     private String parseCell() throws IOException {
         int firstCh = reader.read();
-        if (firstCh == eof) {
+        if (firstCh == -1) {
             lastSeenSentinel = Sentinel.EOF;
             return "";
         } else if (firstCh == quote) {
