@@ -1,4 +1,4 @@
-(defproject com.amperity/separator "0.1.0-SNAPSHOT"
+(defproject com.amperity/separator "0.1.0"
   :description "An efficient and defensive delimiter-separated-value parser."
   :url "https://github.com/amperity/separator"
   :license {:name "MIT License"

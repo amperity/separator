@@ -11,5 +11,9 @@ change log follows the conventions of
 ...
 
 
-[Unreleased]: https://github.com/amperity/commaeleon/compare/0.0.1...HEAD
-[0.0.1]: https://github.com/amperity/commaeleon/compare/0.0.1...0.0.1
+## 0.1.0 - 2022-08-17
+
+Initial project release.
+
+
+[Unreleased]: https://github.com/amperity/separator/compare/0.1.0...HEAD
