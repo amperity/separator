@@ -31,18 +31,22 @@
 (defn jackson-read
   "Read the given file with Jackson."
   [file]
-  (iterator-seq
+  (->>
     (.. (CsvMapper.)
         (readerForListOf String)
         (with CsvParser$Feature/WRAP_AS_ARRAY)
-        (readValues file))))
+        (readValues file))
+    (iterator-seq)
+    (map vec)))
 
 
 (defn profile-consumption
-  "Profile reading the given file with separator, optionally more than once."
-  ([file]
-   (profile-consumption file 1))
-  ([file n]
-   (prof/profile
-     (dotimes [i n]
-       (consume! (separator/read-rows file))))))
+  "Profile reading the given files."
+  [files]
+  (prof/profile
+    {:predefined-transforms
+     [{:type :replace
+       :what #"^.+separator\.repl/consume!;"
+       :replacement "separator.repl/consume!;"}]}
+    (doseq [file files]
+      (consume! (separator/read-rows file)))))
