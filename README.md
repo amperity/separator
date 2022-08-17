@@ -17,6 +17,11 @@ deal with messy, malformed, and downright bizarre data files.
 
 ## Usage
 
+Releases are published on Clojars; to use the latest version with Leiningen,
+add the following to your project dependencies:
+
+[![Clojars Project](http://clojars.org/com.amperity/separator/latest-version.svg)](http://clojars.org/com.amperity/separator)
+
 The main namespace entrypoint is `separator.io`, which contains both the
 reading and writing interfaces.
 
