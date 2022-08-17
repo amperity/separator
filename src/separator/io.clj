@@ -89,9 +89,9 @@
 
 
 (defn zip-headers
-  "A transducer which will zip up rows of cell data into records. If `headers`
-  are provided, they will be used directly, otherwise this returns a stateful
-  transducer which will treat the first row as headers."
+  "A transducer which will zip up rows of cell data into record maps. If
+  headers are provided, they will be used directly, otherwise this will treat
+  the first row as headers."
   ([]
    (zip-headers nil))
   ([headers]
@@ -119,10 +119,10 @@
   of strings representing the cells in a single row, or a parse error with
   details about the error encountered while parsing that row.
 
-  This accepts a variety of input types, including `File`, `InputStream`, and
-  `Reader` values. No data is read from the input until the parser is consumed.
-  The parser can only be consumed **once**, and will not automatically close
-  the input.
+  This accepts a variety of input types, including `String`, `File`,
+  `InputStream`, and `Reader` values. No data is read from the input until the
+  collection is consumed. The parser can only be consumed **once**, and will
+  not automatically close the input.
 
   Options may include:
 
@@ -165,7 +165,7 @@
   function returns a wrapped parser which will convert all rows into record
   maps by applying headers.
 
-  Options are as for `read-rows`, with the addition of:
+  Options the same as `read-rows`, with the addition of:
 
   - `:headers`
     A known sequence of header values to use for the row data. If not provided,
@@ -240,22 +240,24 @@
 
 (defn write-rows
   "Write data to the output `Writer` as separator-delimited text. The `rows`
-  should be a reducible collection of sequential cell values. Returns the
-  number of rows written.
+  should be a reducible collection of sequences of cell values. Each cell is
+  converted to a string with `str` before writing.
 
-   Options may include:
+  Returns the number of rows written.
 
-   - `:separator`
-     Character to separate cells with.
-   - `:quote`
-     Character to quote cell values with.
-   - `:quote?`
-     Predicate which should return true for cells to quote. Can be `true` to
-     always quote cells, `false` to never quote, and defaults to quoting only
-     when necessary.
-   - `:newline`
-     Keyword option for newlines, either `:lf` for a single `\\n` or `:crlf`
-     for Windows-style `\\r\\n`.
+  Options may include:
+
+  - `:separator`
+    Character to separate cells with.
+  - `:quote`
+    Character to quote cell values with.
+  - `:quote?`
+    Controls whether cells are quoted. May be `true` to always quote cells,
+    `false` to never quote, or a predicate which should return truthy on cell
+    values that need quoting. Defaults to quoting only when necessary.
+  - `:newline`
+    Keyword option for newlines, either `:lf` for a single `\\n` or `:crlf`
+    for Windows-style `\\r\\n`.
 
   See `default-options` for default values."
   [^Writer output rows & {:as opts}]
