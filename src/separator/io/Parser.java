@@ -105,6 +105,9 @@ public class Parser implements Iterable<Object>, IReduceInit, Sequential {
         if (ch == separator) {
             lastSeenSentinel = Sentinel.SEP;
             return true;
+        } else if (ch > 13) {
+            // Save three conditional checks in the most common case.
+            return false;
         } else if (ch == '\n') {
             lastSeenSentinel = Sentinel.EOL;
             return true;

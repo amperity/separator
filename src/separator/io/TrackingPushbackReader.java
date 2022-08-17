@@ -2,7 +2,7 @@ package separator.io;
 
 
 import java.io.IOException;
-import java.io.PushbackReader;
+import java.io.FilterReader;
 import java.io.Reader;
 
 
@@ -15,14 +15,16 @@ import java.io.Reader;
  * {@code}\n{@code}. This is fine between rows, but results in unacceptable
  * changes to the raw content of quoted cells.
  *
- * This ONLY correctly implements the {@code}read(){@code} and
- * {@code}unread(char){@code} methods, as that is all the parser uses.
+ * As an additional optimization, we directly implement minimal one-character
+ * pushback logic so we can reduce the overhead of the more flexible and
+ * thread-safe {@code}PushbackReader{@code}. This class ONLY correctly
+ * implements the {@code}read(){@code} and {@code}unread(int){@code} methods,
+ * as that is all the parser uses.
  */
-public class TrackingPushbackReader extends PushbackReader {
+public class TrackingPushbackReader extends FilterReader {
 
-    // Line-break constants
-    private static final int CR = (int)'\r';
-    private static final int LF = (int)'\n';
+    /** Pushback character. */
+    private int last = -1;
 
     /** Was the last thing we read a carriage return? */
     private boolean inEOL = false;
@@ -65,30 +67,45 @@ public class TrackingPushbackReader extends PushbackReader {
 
 
     @Override
-    public int read() throws IOException {
-        synchronized (lock) {
-            int c = super.read();
-
-            if (c == CR || c == LF) {
-                inEOL = true;
-            } else if (inEOL) {
-                inEOL = false;
-                line++;
-                column = 0;
-            } else {
-                column++;
-            }
-
-            return c;
-        }
+    public boolean markSupported() {
+        return false;
     }
 
 
     @Override
-    public void unread(int c) throws IOException {
-        synchronized (lock) {
-            super.unread(c);
-            column--;
+    public int read() throws IOException {
+        int c;
+
+        if (last == -1) {
+            c = super.read();
+        } else {
+            c = last;
+            last = -1;
         }
+
+        if (c == '\r' || c == '\n') {
+            inEOL = true;
+        } else if (inEOL) {
+            inEOL = false;
+            line++;
+            column = 0;
+        } else {
+            column++;
+        }
+
+        return c;
+    }
+
+
+    /**
+     * Pushes back a single character by copying it to the front of the
+     * pushback buffer.
+     */
+    public void unread(int c) throws IOException {
+        if (last != -1) {
+            throw new IOException("Pushback buffer overflow");
+        }
+        last = c;
+        column--;
     }
 }
