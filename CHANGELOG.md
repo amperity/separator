@@ -11,9 +11,19 @@ change log follows the conventions of
 ...
 
 
+## [0.1.1] - 2022-09-27
+
+### Changed
+- Compile with Java 1.8 for compatibility with older code.
+
+### Fixed
+- Eliminated a reflection warning in the write path.
+
+
 ## 0.1.0 - 2022-08-17
 
 Initial project release.
 
 
-[Unreleased]: https://github.com/amperity/separator/compare/0.1.0...HEAD
+[Unreleased]: https://github.com/amperity/separator/compare/0.1.1...HEAD
+[0.1.1]: https://github.com/amperity/separator/compare/0.1.0...0.1.1
