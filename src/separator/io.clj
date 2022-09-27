@@ -6,7 +6,7 @@
     (java.io
       BufferedReader
       File
-      FileReader
+      FileInputStream
       InputStream
       InputStreamReader
       Reader
@@ -56,7 +56,7 @@
     (recur (InputStreamReader. ^InputStream input StandardCharsets/UTF_8))
 
     (instance? File input)
-    (recur (FileReader. ^File input StandardCharsets/UTF_8))
+    (recur (FileInputStream. ^File input))
 
     (string? input)
     (recur (StringReader. input))
