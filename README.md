@@ -134,30 +134,30 @@ Separator prioritizes defensiveness over speed, but aims to be as performant as
 possible within those constraints. For comparison, it's faster than `data.csv`
 but significantly slower than Jackson:
 
-```
+```clojure
 => (crit/quick-bench (consume! (separator/read-rows test-file)))
-Evaluation count : 6 in 6 samples of 1 calls.
-             Execution time mean : 5.544234 sec
-    Execution time std-deviation : 78.630488 ms
-   Execution time lower quantile : 5.481820 sec ( 2.5%)
-   Execution time upper quantile : 5.667485 sec (97.5%)
-                   Overhead used : 6.824396 ns
+;; Evaluation count : 6 in 6 samples of 1 calls.
+;;              Execution time mean : 5.544234 sec
+;;     Execution time std-deviation : 78.630488 ms
+;;    Execution time lower quantile : 5.481820 sec ( 2.5%)
+;;    Execution time upper quantile : 5.667485 sec (97.5%)
+;;                    Overhead used : 6.824396 ns
 
 => (crit/quick-bench (consume! (data-csv-read test-file)))
-Evaluation count : 6 in 6 samples of 1 calls.
-             Execution time mean : 10.253641 sec
-    Execution time std-deviation : 121.221011 ms
-   Execution time lower quantile : 10.146078 sec ( 2.5%)
-   Execution time upper quantile : 10.436205 sec (97.5%)
-                   Overhead used : 6.943926 ns
+;; Evaluation count : 6 in 6 samples of 1 calls.
+;;              Execution time mean : 10.253641 sec
+;;     Execution time std-deviation : 121.221011 ms
+;;    Execution time lower quantile : 10.146078 sec ( 2.5%)
+;;    Execution time upper quantile : 10.436205 sec (97.5%)
+;;                    Overhead used : 6.943926 ns
 
 => (crit/quick-bench (consume! (jackson-read test-file)))
-Evaluation count : 6 in 6 samples of 1 calls.
-             Execution time mean : 2.325301 sec
-    Execution time std-deviation : 40.611328 ms
-   Execution time lower quantile : 2.296693 sec ( 2.5%)
-   Execution time upper quantile : 2.390772 sec (97.5%)
-                   Overhead used : 6.824396 ns
+;; Evaluation count : 6 in 6 samples of 1 calls.
+;;              Execution time mean : 2.325301 sec
+;;     Execution time std-deviation : 40.611328 ms
+;;    Execution time lower quantile : 2.296693 sec ( 2.5%)
+;;    Execution time upper quantile : 2.390772 sec (97.5%)
+;;                    Overhead used : 6.824396 ns
 ```
 
 The test above was performed on a 2021 MacBook Pro with `data.csv` version
@@ -166,21 +166,20 @@ The test above was performed on a 2021 MacBook Pro with `data.csv` version
 
 Of course, all the speed in the world won't save you from a misplaced quote:
 
-```
+```clojure
 => (spit "simple-err.csv" "A,B,C\nD,\"\"E,F\nG,H,I\n")
-nil
 
 => (consume! (separator/read-rows (io/file "simple-err.csv")))
 3
 
 => (consume! (data-csv-read (io/file "simple-err.csv")))
-Execution error at clojure.data.csv/read-quoted-cell (csv.clj:37).
-CSV error (unexpected character: E)
+;; Execution error at clojure.data.csv/read-quoted-cell (csv.clj:37).
+;; CSV error (unexpected character: E)
 
 => (consume! (jackson-read (io/file "simple-err.csv")))
-Execution error (JsonParseException) at com.fasterxml.jackson.core.JsonParser/_constructError (JsonParser.java:2337).
-Unexpected character ('E' (code 69)): Expected column separator character (',' (code 44)) or end-of-line
- at [Source: (com.fasterxml.jackson.dataformat.csv.impl.UTF8Reader); line: 2, column: 6]
+;; Execution error (JsonParseException) at com.fasterxml.jackson.core.JsonParser/_constructError (JsonParser.java:2337).
+;; Unexpected character ('E' (code 69)): Expected column separator character (',' (code 44)) or end-of-line
+;;  at [Source: (com.fasterxml.jackson.dataformat.csv.impl.UTF8Reader); line: 2, column: 6]
 ```
 
 
