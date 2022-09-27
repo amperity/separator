@@ -180,6 +180,7 @@
 
 (defn- row-separator
   "Convert a keyword to row separator string."
+  ^String
   [k]
   (case k
     :lf "\n"
