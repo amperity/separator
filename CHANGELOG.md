@@ -10,6 +10,13 @@ change log follows the conventions of
 
 ...
 
+## [0.2.0] - 2023-05-08
+
+### Added
+- Each row read from the parser includes `:line` and `:column` metadata
+  providing the position in the input where the row occurred.
+- `zip-headers` preserves metadata on incoming rows in the returned records.
+
 
 ## [0.1.1] - 2022-09-27
 
@@ -25,5 +32,6 @@ change log follows the conventions of
 Initial project release.
 
 
-[Unreleased]: https://github.com/amperity/separator/compare/0.1.1...HEAD
+[Unreleased]: https://github.com/amperity/separator/compare/0.2.0...HEAD
+[0.2.0]: https://github.com/amperity/separator/compare/0.1.1...0.2.0
 [0.1.1]: https://github.com/amperity/separator/compare/0.1.0...0.1.1
