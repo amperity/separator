@@ -105,7 +105,8 @@
           (if-let [headers @state]
             (if (parse-error? row)
               (rf acc row)
-              (rf acc (zipmap headers row)))
+              (let [record (with-meta  (zipmap headers row) (meta row))]
+                (rf acc record)))
             (if (parse-error? row)
               (throw row)
               (do

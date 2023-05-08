@@ -290,3 +290,17 @@
            (vec (separator/read-records
                   "Fry,26,Delivery Boy\nLeela,30,Ship Captain\nHubert,160,Professor\n"
                   :headers ["name" "age" "role"]))))))
+
+
+(deftest metadata-read
+  (is (= [{:line 1, :column 13}]
+         (map meta (read-csv "\"A\",\"B\",\"C\"")))
+      "Checking metadata values with a single row")
+  (is (= [{:line 1, :column 18} {:line 2, :column 17}]
+         (map meta (read-csv "\"AB\",\"CDE\",\"FGHI\"\n\"AB\",\"CDE\",\"FGHI\"\n")))
+      "Checking metadata values with rows of different lengths")
+  (is (= [{:line 1, :column 20} {:line 2, :column 21} {:line 3, :column 20}]
+         (map meta (separator/read-records
+                     "Fry,26,Delivery Boy\nLeela,30,Ship Captain\nHubert,160,Professor\n"
+                     :headers ["name" "age" "role"])))
+      "Checking metadata values of rows with headers"))

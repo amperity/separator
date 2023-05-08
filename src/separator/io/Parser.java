@@ -10,6 +10,8 @@ import java.util.NoSuchElementException;
 
 import clojure.lang.IFn;
 import clojure.lang.IReduceInit;
+import clojure.lang.Keyword;
+import clojure.lang.PersistentArrayMap;
 import clojure.lang.PersistentVector;
 import clojure.lang.Reduced;
 import clojure.lang.Sequential;
@@ -319,7 +321,16 @@ public class Parser implements Iterable<Object>, IReduceInit, Sequential {
                 }
                 row.add(cell);
                 if (lastSeenSentinel != Sentinel.SEP) {
-                    return PersistentVector.create(row);
+                    PersistentVector vec = PersistentVector.create(row);
+                    int line = reader.getLineNumber();
+                    int column = reader.getColumnNumber();
+                    Object[] elements = new Object[4];
+                    elements[0] = Keyword.intern(null, "line");
+                    elements[1] = reader.getLineNumber();
+                    elements[2] = Keyword.intern(null, "column");
+                    elements[3] = reader.getColumnNumber();
+                    PersistentArrayMap metadata = PersistentArrayMap.createAsIfByAssoc(elements);
+                    return vec.withMeta(metadata);
                 }
                 if (maxRowWidth <= row.size()) {
                     throw parseError(
