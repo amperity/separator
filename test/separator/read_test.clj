@@ -303,4 +303,4 @@
          (map meta (separator/read-records
                      "Fry,26,Delivery Boy\nLeela,30,Ship Captain\nHubert,160,Professor\n"
                      :headers ["name" "age" "role"])))
-      "Checking metadata values with rows of different lengths"))
+      "Checking metadata values of rows with headers"))
